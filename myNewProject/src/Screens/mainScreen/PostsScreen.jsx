@@ -7,7 +7,7 @@ const PostsScreen = () => {
       <View style={styles.userWrapper}>
         <Image
           style={styles.img}
-          source={require("../../assets/images/userPhoto.png")}
+          source={require("../../../assets/images/userPhoto.png")}
         />
         <View>
           <Text style={styles.userName}>Natali Romanova</Text>

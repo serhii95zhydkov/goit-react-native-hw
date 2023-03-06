@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-import { AuthContext } from "../App";
+import { AuthContext } from "../../App";
 
 const Header = ({ title }) => {
   const { setIsAuth } = useContext(AuthContext);

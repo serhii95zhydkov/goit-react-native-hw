@@ -7,12 +7,12 @@ import { Feather } from "@expo/vector-icons";
 import { getHeaderTitle } from "@react-navigation/elements";
 
 import RegistrationScreens from "./Screens/auth/RegistrationScreen";
-import LoginScreen from "./Screens/auth/LoginScreen";
+import LoginScreen from './Screens/auth/LoginScreen'
 import PostsScreen from "./Screens/mainScreen/PostsScreen";
 import CreatePostsScreen from "./Screens/mainScreen/CreatePostsScreen";
 import ProfileScreen from "./Screens/mainScreen/ProfileScreen";
 
-import Header from "./components/Header";
+import Header from './components/Header'
 
 const AuthStack = createStackNavigator();
 const MainTab = createBottomTabNavigator();

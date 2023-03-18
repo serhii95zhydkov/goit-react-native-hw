@@ -4,7 +4,7 @@ import { Feather } from "@expo/vector-icons";
 
 import { AuthContext } from "../../App";
 
-const Header = ({ title }) => {
+const Header = ({ title, navigation, back }) => {
   const { setIsAuth } = useContext(AuthContext);
 
   return (
@@ -19,10 +19,10 @@ const Header = ({ title }) => {
           <Feather name="log-out" size={24} color="#bdbdbd" />
         </TouchableOpacity>
       )}
-      {title === "Створити публікацію" && (
+      {back && (
         <TouchableOpacity
           style={styles.arrowLeft}
-          onPress={() => setIsAuth(false)}
+          onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
           <Feather name="arrow-left" size={24} color="rgba(33, 33, 33, 0.8)" />

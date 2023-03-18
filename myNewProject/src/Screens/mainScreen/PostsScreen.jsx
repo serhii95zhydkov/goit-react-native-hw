@@ -1,48 +1,53 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import { getHeaderTitle } from "@react-navigation/elements";
+
+import Home from "../nestedScreens/Home";
+import CommentsScreen from "../nestedScreens/CommentsScreen";
+import MapScreen from "../nestedScreens/MapScreen";
+
+import Header from "../../components/Header";
+
+const NestedScreen = createStackNavigator();
 
 const PostsScreen = () => {
   return (
-    <View style={styles.container}>
-      <View style={styles.userWrapper}>
-        <Image
-          style={styles.img}
-          source={require("../../../assets/images/userPhoto.png")}
-        />
-        <View>
-          <Text style={styles.userName}>Natali Romanova</Text>
-          <Text style={styles.userEmail}>email@example.com</Text>
-        </View>
-      </View>
-    </View>
+    <NestedScreen.Navigator>
+      <NestedScreen.Screen
+        name="Home"
+        component={Home}
+        options={{
+          headerTitle: "Публікації",
+          header: ({ navigation, route, options, back }) => {
+            const title = getHeaderTitle(options, route.name);
+            return <Header title={title} navigation={navigation} back={back} />;
+          },
+        }}
+      />
+      <NestedScreen.Screen
+        name="CommentsScreen"
+        component={CommentsScreen}
+        options={{
+          headerTitle: "Коментарі",
+          header: ({ navigation, route, options, back }) => {
+            const title = getHeaderTitle(options, route.name);
+            return <Header title={title} navigation={navigation} back={back} />;
+          },
+        }}
+      />
+      <NestedScreen.Screen
+        name="MapScreen"
+        component={MapScreen}
+        options={{
+          headerTitle: "Мапа",
+          header: ({ navigation, route, options, back }) => {
+            const title = getHeaderTitle(options, route.name);
+            return <Header title={title} navigation={navigation} back={back} />;
+          },
+        }}
+      />
+    </NestedScreen.Navigator>
   );
 };
-export default PostsScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  img: {
-    marginRight: 8,
-  },
-  userWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 16,
-    marginTop: 32,
-  },
-  userName: {
-    fontSize: 13,
-    lineHeight: 15,
-    fontWeight: "700",
-    color: "#212121",
-  },
-  userEmail: {
-    fontSize: 11,
-    lineHeight: 13,
-    fontWeight: "400",
-    color: "rgba(33, 33, 33, 0.8)",
-  },
-});
+export default PostsScreen;

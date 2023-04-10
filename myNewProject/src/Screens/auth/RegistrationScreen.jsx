@@ -1,4 +1,5 @@
-import { useState, useContext } from "react";
+import { useState, useEffect } from "react";
+
 import {
   StyleSheet,
   Text,
@@ -10,33 +11,108 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ImageBackground,
-  Image,
+  Dimensions,
 } from "react-native";
 
-import { AuthContext } from "../../../App";
+import { useDispatch, useSelector } from "react-redux";
+
+import * as ImagePicker from "expo-image-picker";
+import { uploadBytes, ref, getDownloadURL } from "firebase/storage";
+
+import { authSignUpUser } from "../../redux/auth/authOperations";
+
+import { storage } from "../../firebase/config";
+
+import Avatar from "../../components/Avatar";
+import ErrorMessage from "../../components/ErrorMessage";
 
 const initialState = {
   login: "",
   email: "",
   password: "",
+  avatar: null,
 };
 
 const RegistrationScreens = ({ navigation }) => {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
+  const [dimensions, setDimensions] = useState(
+    Dimensions.get("window").width - 16 * 2
+  );
+  const [isPasswordHidden, setIsPasswordHidden] = useState(true);
+  const [focused, setFocused] = useState("");
 
-  const { setIsAuth } = useContext(AuthContext);
+  const { error } = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const dimensionsSubscription = Dimensions.addEventListener(
+      "change",
+      ({ window }) => {
+        setDimensions(window.width - 16 * 2);
+      }
+    );
+
+    return () => {
+      dimensionsSubscription.remove();
+    };
+  }, []);
+
+  const pickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setState((prevState) => ({
+        ...prevState,
+        avatar: result.assets[0].uri,
+      }));
+    }
+  };
+
+  const removeAvatar = () => {
+    setState((prevState) => ({
+      ...prevState,
+      avatar: null,
+    }));
+  };
+
+  const uploadPhotoToServer = async () => {
+    let imageRef;
+
+    if (state.avatar) {
+      const res = await fetch(state.avatar);
+      const file = await res.blob();
+      const uniqId = Date.now().toString();
+      imageRef = ref(storage, `userAvatars/${uniqId}`);
+      await uploadBytes(imageRef, file);
+    } else {
+      imageRef = ref(storage, `userAvatars/avatar_placeholder.jpg`);
+    }
+
+    const processedPhoto = await getDownloadURL(imageRef);
+    return processedPhoto;
+  };
+
+  const handleSubmit = async () => {
+    const photo = await uploadPhotoToServer();
+    setIsShowKeyboard(false);
+    Keyboard.dismiss();
+    dispatch(authSignUpUser({ ...state, avatar: photo }));
+  };
 
   const keyboardHide = () => {
     setIsShowKeyboard(false);
+    setFocused("");
     Keyboard.dismiss();
-    console.log(state);
-    setState(initialState);
-    setIsAuth(true);
   };
 
   return (
-    <TouchableWithoutFeedback onPress={() => keyboardHide()}>
+    <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
         <ImageBackground
           style={styles.image}
@@ -52,11 +128,10 @@ const RegistrationScreens = ({ navigation }) => {
               }}
             >
               <View style={styles.imageContainer}>
-                <Image
-                  source={require('../../../assets/images/userBigPhoto.png')} />
-                <Image
-                  source={require("../../../assets/add.png")}
-                  style={styles.iconAdd}
+                <Avatar
+                  avatar={state.avatar}
+                  onPick={pickAvatar}
+                  onRemove={removeAvatar}
                 />
               </View>
               <View style={styles.form}>
@@ -66,20 +141,37 @@ const RegistrationScreens = ({ navigation }) => {
                 <View>
                   <TextInput
                     placeholder="Логін"
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      borderColor: focused === "login" ? "#FF6C00" : "#E8E8E8",
+                      backgroundColor:
+                        focused === "login" ? "#FFFFFF" : "#F6F6F6",
+                    }}
                     value={state.login}
                     onSubmitEditing={keyboardHide}
-                    onFocus={() => setIsShowKeyboard(true)}
+                    onFocus={() => {
+                      setIsShowKeyboard(true);
+                      setFocused("login");
+                    }}
                     onChangeText={(value) =>
                       setState((prevState) => ({ ...prevState, login: value }))
                     }
                   />
                   <TextInput
                     placeholder="Адреса електронної пошти"
-                    style={styles.input}
+                    keyboardType="email-address"
+                    style={{
+                      ...styles.input,
+                      borderColor: focused === "email" ? "#FF6C00" : "#E8E8E8",
+                      backgroundColor:
+                        focused === "email" ? "#FFFFFF" : "#F6F6F6",
+                    }}
                     value={state.email}
                     onSubmitEditing={keyboardHide}
-                    onFocus={() => setIsShowKeyboard(true)}
+                    onFocus={() => {
+                      setIsShowKeyboard(true);
+                      setFocused("email");
+                    }}
                     onChangeText={(value) =>
                       setState((prevState) => ({ ...prevState, email: value }))
                     }
@@ -87,11 +179,20 @@ const RegistrationScreens = ({ navigation }) => {
                   <View>
                     <TextInput
                       placeholder="Пароль"
-                      style={styles.input}
-                      secureTextEntry={true}
+                      style={{
+                        ...styles.input,
+                        borderColor:
+                          focused === "password" ? "#FF6C00" : "#E8E8E8",
+                        backgroundColor:
+                          focused === "password" ? "#FFFFFF" : "#F6F6F6",
+                      }}
+                      secureTextEntry={isPasswordHidden}
                       value={state.password}
                       onSubmitEditing={keyboardHide}
-                      onFocus={() => setIsShowKeyboard(true)}
+                      onFocus={() => {
+                        setIsShowKeyboard(true);
+                        setFocused("password");
+                      }}
                       onChangeText={(value) =>
                         setState((prevState) => ({
                           ...prevState,
@@ -99,22 +200,31 @@ const RegistrationScreens = ({ navigation }) => {
                         }))
                       }
                     />
-                    <Text style={styles.textPassword}>Показати</Text>
+                    <Text
+                      style={styles.textPassword}
+                      onPress={() =>
+                        setIsPasswordHidden((prevState) => !prevState)
+                      }
+                    >
+                      {isPasswordHidden ? "Показати" : "Приховати"}
+                    </Text>
                   </View>
                 </View>
 
                 <TouchableOpacity
                   activeOpacity={0.5}
                   style={styles.btn}
-                  onPress={keyboardHide}
+                  onPress={handleSubmit}
                 >
                   <Text style={styles.btnTitle}>Зареєструватись</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  activeOpacity={0.5}
                   onPress={() => navigation.navigate("LoginScreen")}
                 >
                   <Text style={styles.textNav}>Вже є акаунт? Увійти</Text>
                 </TouchableOpacity>
+                {error && <ErrorMessage error={error} />}
               </View>
             </View>
           </KeyboardAvoidingView>
@@ -135,6 +245,23 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "flex-end",
   },
+  containerForm: {
+    paddingTop: 92,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    backgroundColor: "#ffffff",
+  },
+  imageContainer: {
+    position: "absolute",
+    borderRadius: 16,
+    width: "100%",
+    paddingTop: 92,
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  form: {
+    marginHorizontal: 16,
+  },
   title: {
     fontFamily: "Roboto-Regular",
     fontSize: 30,
@@ -143,15 +270,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 33,
     color: "#212121",
-  },
-  containerForm: {
-    paddingTop: 92,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    backgroundColor: "#ffffff",
-  },
-  form: {
-    marginHorizontal: 16,
   },
   input: {
     fontFamily: "Roboto-Regular",
@@ -165,6 +283,15 @@ const styles = StyleSheet.create({
     borderColor: "#e8e8e8",
     backgroundColor: "#f6f6f6",
     color: "#212121",
+  },
+  textPassword: {
+    position: "absolute",
+    top: "48%",
+    left: "76%",
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    lineHeight: 19,
+    color: "#1b4371",
   },
   btn: {
     alignItems: "center",
@@ -181,15 +308,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: "#ffffff",
   },
-  textPassword: {
-    position: "absolute",
-    top: "48%",
-    left: "76%",
-    fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    lineHeight: 19,
-    color: "#1b4371",
-  },
   textNav: {
     fontFamily: "Roboto-Regular",
     fontSize: 16,
@@ -197,21 +315,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 32,
     color: "#1b4371",
-  },
-  imageContainer: {
-    position: "absolute",
-    left: "35%",
-    top: "-15%",
-    width: 120,
-    height: 120,
-    borderRadius: 16,
-    backgroundColor: "#f6f6f6",
-  },
-  iconAdd: {
-    position: "absolute",
-    left: "90%",
-    top: "65%",
-    width: 25,
-    height: 25,
   },
 });

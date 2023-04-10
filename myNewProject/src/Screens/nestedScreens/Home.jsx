@@ -1,69 +1,47 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, Image, FlatList, StyleSheet } from "react-native";
 
-import { Feather } from "@expo/vector-icons";
+import { db } from "../../firebase/config";
+import { onSnapshot, collection, query, orderBy } from "firebase/firestore";
 
-const Home = ({ route, navigation }) => {
+import PostItem from "../../components/PostItem";
+
+const Home = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
+  const { avatar, login, email, userId } = useSelector((state) => state.auth);
+
+  const getAllPosts = async () => {
+    const commentsQuery = query(
+      collection(db, "posts"),
+      orderBy("createdAt", "desc")
+    );
+
+    onSnapshot(commentsQuery, (data) => {
+      setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  };
 
   useEffect(() => {
-    if (route.params) {
-      setPosts((prevState) => [...prevState, route.params]);
-    }
-  }, [route.params]);
+    getAllPosts();
+  }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.userWrapper}>
-        <Image
-          style={styles.img}
-          source={require("../../../assets/images/userPhoto.png")}
-        />
+        <Image style={styles.userImg} source={{ uri: avatar }} />
         <View>
-          <Text style={styles.userName}>Natali Romanova</Text>
-          <Text style={styles.userEmail}>email@example.com</Text>
+          <Text style={styles.userName}>{login}</Text>
+          <Text style={styles.userEmail}>{email}</Text>
         </View>
       </View>
       <FlatList
         data={posts}
-        keyExtractor={(item, index) => index.toString()}
+        style={styles.postList}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View>
-            <Image source={{ uri: item.photo }} style={styles.postImage} />
-            <Text style={styles.postTitle}>{item.title}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("CommentsScreen")}
-              >
-                <Feather style={styles.buttonComments} name="message-circle" size={24} color="#BDBDBD" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.buttonLocation}
-                onPress={() =>
-                  navigation.navigate("MapScreen", {
-                    location: item.coords,
-                    title: item.title,
-                  })
-                }
-              >
-                <Feather
-                  style={{ marginRight: 4 }}
-                  name="map-pin"
-                  size={24}
-                  color="#BDBDBD"
-                />
-                <Text style={styles.postLocation}>{item.location}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <PostItem item={item} navigation={navigation} userId={userId} />
         )}
       />
     </View>
@@ -76,15 +54,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  img: {
-    marginRight: 8,
-  },
   userWrapper: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 32,
     marginBottom: 32,
     marginLeft: 16,
+  },
+  userImg: {
+    marginRight: 8,
+    width: 60,
+    height: 60,
+    borderRadius: 16,
   },
   userName: {
     fontSize: 13,
@@ -98,44 +79,8 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "rgba(33, 33, 33, 0.8)",
   },
-  postImage: {
+  postList: {
     marginHorizontal: 16,
-    marginBottom: 8,
-    height: 200,
-    borderRadius: 8,
-  },
-  postTitle: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-    textAlign: "left",
-    fontWeight: "500",
-    fontSize: 16,
-    lineHeight: 19,
-    color: "#212121",
-  },
-  buttonContainer: {
-    flex: 1,
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexDirection: "row",
-    marginHorizontal: 16,
-    marginBottom: 32,
-  },
-  buttonComments: {
-    alignItems: "center",
-    flexDirection: "row",
-    transform: [{ rotate: '-90deg' }],
-  },
-  buttonLocation: {
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  postLocation: {
-    fontSize: 16,
-    lineHeight: 19,
-    color: "#212121",
-    textDecorationStyle: "solid",
-    textDecorationLine: "underline",
-    textDecorationColor: "#212121",
+    maxWidth: 360,
   },
 });

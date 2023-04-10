@@ -1,11 +1,12 @@
-import { useContext } from "react";
 import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import { useDispatch } from "react-redux";
+
 import { Feather } from "@expo/vector-icons";
 
-import { AuthContext } from "../../App";
+import { authSignOutUser } from "../redux/auth/authOperations";
 
 const Header = ({ title, navigation, back }) => {
-  const { setIsAuth } = useContext(AuthContext);
+  const dispatch = useDispatch();
 
   return (
     <View style={styles.header}>
@@ -13,7 +14,7 @@ const Header = ({ title, navigation, back }) => {
       {title === "Публікації" && (
         <TouchableOpacity
           style={styles.logOut}
-          onPress={() => setIsAuth(false)}
+          onPress={() => dispatch(authSignOutUser())}
           activeOpacity={0.7}
         >
           <Feather name="log-out" size={24} color="#bdbdbd" />

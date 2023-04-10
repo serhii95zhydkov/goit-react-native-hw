@@ -2,9 +2,9 @@ import React from "react";
 
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { getHeaderTitle } from "@react-navigation/elements";
 
 import { Feather } from "@expo/vector-icons";
-import { getHeaderTitle } from "@react-navigation/elements";
 
 import RegistrationScreens from "./Screens/auth/RegistrationScreen";
 import LoginScreen from "./Screens/auth/LoginScreen";
@@ -42,9 +42,9 @@ export const useRoute = (isAuth) => {
           height: 60,
           alignItems: "center",
         },
-        tabBarActiveTintColor: "#ffffff",
+        tabBarActiveTintColor: "#FFFFFF",
         tabBarInactiveTintColor: "rgba(33, 33, 33, 0.8)",
-        tabBarActiveBackgroundColor: "#ff6c00",
+        tabBarActiveBackgroundColor: "#FF6C00",
       }}
     >
       <MainTab.Screen

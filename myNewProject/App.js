@@ -1,20 +1,19 @@
-import { useCallback, createContext, useState } from "react";
+import { useCallback } from "react";
 import { StyleSheet, View } from "react-native";
+
+import { Provider } from "react-redux";
+import { store } from "./src/redux/store";
+
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
 
 import { useFonts } from "expo-font";
-
 import * as SplashScreen from "expo-splash-screen";
-
-import { useRoute } from "./src/router";
 
 SplashScreen.preventAutoHideAsync();
 
-export const AuthContext = createContext(null);
+import Main from "./src/components/Main";
 
 export default function App() {
-  const [isAuth, setIsAuth] = useState(false);
   const [fontsLoaded] = useFonts({
     "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
   });
@@ -29,15 +28,13 @@ export default function App() {
     return null;
   }
 
-  const routing = useRoute(isAuth);
-
   return (
-    <AuthContext.Provider value={{ isAuth, setIsAuth }}>
-      <View style={styles.container} onLayout={onLayoutRootView}>
-        <NavigationContainer>{routing}</NavigationContainer>
-        <StatusBar style="auto" />
-      </View>
-    </AuthContext.Provider>
+    <View style={styles.container} onLayout={onLayoutRootView}>
+      <Provider store={store}>
+        <Main />
+      </Provider>
+      <StatusBar style="auto" />
+    </View>
   );
 }
 

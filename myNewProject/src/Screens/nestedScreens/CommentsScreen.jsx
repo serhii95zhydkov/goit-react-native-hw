@@ -7,6 +7,8 @@ import {
   TouchableWithoutFeedback,
   TouchableOpacity,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   FlatList,
   Image,
@@ -74,39 +76,39 @@ const CommentsScreen = ({ route }) => {
   return (
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
-          <View style={styles.photoWrapper}>
-            <Image source={{ uri: photo }} style={styles.photo} />
-          </View>
-          <SafeAreaView style={{ flex: 1, marginHorizontal: 16 }}>
-            <FlatList
-              data={allComments}
-              style={styles.messageList}
-              keyExtractor={(_, index) => index.toString()}
-              renderItem={({ item }) => (
-                <View
+        <View style={styles.photoWrapper}>
+          <Image source={{ uri: photo }} style={styles.photo} />
+        </View>
+        <SafeAreaView style={{ flex: 1, marginHorizontal: 16 }}>
+          <FlatList
+            data={allComments}
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  flexDirection: item.userId === userId ? "row-reverse" : "row",
+                }}
+              >
+                <Image
                   style={{
-                    ...styles.messageContainer,
-                    flexDirection:
-                      item.userId === userId ? "row-reverse" : "row",
+                    ...styles.messageAvatar,
+                    marginLeft: item.userId === userId ? 16 : 0,
+                    marginRight: item.userId !== userId ? 16 : 0,
                   }}
-                >
-                  <Image
-                    style={{
-                      ...styles.messageAvatar,
-                      marginLeft: item.userId === userId ? 16 : 0,
-                      marginRight: item.userId !== userId ? 16 : 0,
-                    }}
-                    source={{ uri: item.avatar }}
-                  />
-                  <View style={styles.message}>
-                    <Text style={styles.messageText}>{item.comment}</Text>
-                    <Text style={styles.messageDate}>{item.date}</Text>
-                  </View>
+                  source={{ uri: item.avatar }}
+                />
+                <View style={styles.message}>
+                  <Text style={styles.messageText}>{item.comment}</Text>
+                  <Text style={styles.messageDate}>{item.date}</Text>
                 </View>
-              )}
-            />
-          </SafeAreaView>
-          <View style={styles.form}>
+              </View>
+            )}
+          />
+        </SafeAreaView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={{ ...styles.form, marginBottom: focused ? 100 : 0 }}>
             <TextInput
               style={{
                 ...styles.input,
@@ -130,6 +132,7 @@ const CommentsScreen = ({ route }) => {
               <AntDesign name="arrowup" size={24} color="white" />
             </TouchableOpacity>
           </View>
+        </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -154,13 +157,6 @@ const styles = StyleSheet.create({
   photo: {
     width: "100%",
     height: "100%",
-  },
-  messageList: {
-    width: "100%",
-  },
-  messageContainer: {
-    flex: 1,
-    width: "100%",
   },
   messageAvatar: {
     width: 28,

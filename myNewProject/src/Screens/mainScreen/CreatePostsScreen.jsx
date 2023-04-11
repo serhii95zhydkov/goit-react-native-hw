@@ -67,7 +67,6 @@ const CreatePostsScreen = ({ navigation }) => {
     const imageRef = ref(storage, `postImages/${uniquePostId}`);
     await uploadBytes(imageRef, file);
     const processedPhoto = await getDownloadURL(imageRef);
-    console.log("processedPhoto", processedPhoto);
     return processedPhoto;
   };
 
@@ -184,7 +183,7 @@ const CreatePostsScreen = ({ navigation }) => {
             </TouchableOpacity>
             {error && <ErrorMessage error={error} />}
           </View>
-          <View style={{ flex: 1, position: "absolute", top: 600, left: 160 }}>
+          <View style={{ flex: 1, position: "absolute", top: 580, left: 160 }}>
             <TouchableOpacity
               onPress={resetPost}
               style={{

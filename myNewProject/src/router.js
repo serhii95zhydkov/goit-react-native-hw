@@ -39,7 +39,7 @@ export const useRoute = (isAuth) => {
       screenOptions={{
         tabBarShowLabel: false,
         tabBarStyle: {
-          height: 60,
+          height: 80,
           alignItems: "center",
         },
         tabBarActiveTintColor: "#FFFFFF",

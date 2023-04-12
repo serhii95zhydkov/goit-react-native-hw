@@ -12,6 +12,7 @@ import {
   ImageBackground,
   Platform,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +33,7 @@ const LoginScreen = ({ navigation }) => {
   );
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);
   const [focused, setFocused] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { error } = useSelector((state) => state.auth);
 
@@ -53,7 +55,10 @@ const LoginScreen = ({ navigation }) => {
   const handleSubmit = () => {
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    dispatch(authSignInUser(state));
+    setIsLoading(true);
+    dispatch(authSignInUser(state)).finally(() => {
+      setIsLoading(false);
+    });
     setState(initialState);
   };
 
@@ -147,8 +152,13 @@ const LoginScreen = ({ navigation }) => {
                   activeOpacity={0.5}
                   style={styles.btn}
                   onPress={handleSubmit}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.btnTitle}>Увійти</Text>
+                  {isLoading ? (
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.btnTitle}>Увійти</Text>
+                  )}
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
@@ -228,7 +238,7 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     lineHeight: 19,
-    color: "#ffffff",
+    color: "#FFFFFF",
   },
   textNav: {
     fontFamily: "Roboto-Regular",

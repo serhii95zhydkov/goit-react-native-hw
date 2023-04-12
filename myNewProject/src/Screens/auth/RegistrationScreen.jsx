@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
   ImageBackground,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -41,6 +42,7 @@ const RegistrationScreens = ({ navigation }) => {
   );
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);
   const [focused, setFocused] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { error } = useSelector((state) => state.auth);
 
@@ -102,7 +104,10 @@ const RegistrationScreens = ({ navigation }) => {
     const photo = await uploadPhotoToServer();
     setIsShowKeyboard(false);
     Keyboard.dismiss();
-    dispatch(authSignUpUser({ ...state, avatar: photo }));
+    setIsLoading(true);
+    dispatch(authSignUpUser({ ...state, avatar: photo })).finally(() => {
+      setIsLoading(false);
+    });
   };
 
   const keyboardHide = () => {
@@ -215,8 +220,13 @@ const RegistrationScreens = ({ navigation }) => {
                   activeOpacity={0.5}
                   style={styles.btn}
                   onPress={handleSubmit}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.btnTitle}>Зареєструватись</Text>
+                  {isLoading ? (
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.btnTitle}>Зареєструватись</Text>
+                  )}
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.5}
